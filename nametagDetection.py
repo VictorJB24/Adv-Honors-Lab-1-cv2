@@ -54,8 +54,8 @@ ycoords = reject_outliers(ycoords)
 
 
 # For testing, display corners of nametag
-#canny = cv2.circle(blurred, (xcoords[len(xcoords) -1], ycoords[len(ycoords) -1]), 2, (255,0,0), 5) # Top right 
-#canny = cv2.circle(blurred, (xcoords[0], ycoords[0]), 2, (255,0,0), 5) # Top left 
+#canny = cv2.circle(image, (xcoords[len(xcoords) -1], ycoords[len(ycoords) -1]), 2, (255,0,0), 5) # Top right 
+#canny = cv2.circle(image, (xcoords[0], ycoords[0]), 2, (255,0,0), 5) # Top left 
 
 # Adjusting y offset for cursor based on size (distance) of nametag
 ydist = ycoords[len(ycoords) -1] - ycoords[0]
@@ -66,5 +66,6 @@ yoffset = ydist * 4
 canny = cv2.circle(image, (xcoords[len(xcoords) // 2], ycoords[len(ycoords) // 2] + yoffset), 5, (255,0,0), 5) # Median (slightly better)
 cv2.imshow("canny", canny)
 
+cursorCoords = (xcoords[len(xcoords) // 2], ycoords[len(ycoords) // 2] + yoffset) # For vic
 
-cv2.waitKey(0)
+#cv2.waitKey(0)
