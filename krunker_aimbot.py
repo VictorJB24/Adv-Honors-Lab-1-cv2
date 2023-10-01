@@ -55,7 +55,8 @@ def main():
 
     while True:
 
-        if keyboard.read_key() == "a":
+        key_event = keyboard.read_event(suppress=True)
+        if key_event.event_type == keyboard.KEY_DOWN and key_event.name == 'o':
             AUTO_AIM_ON = not AUTO_AIM_ON
             print("Autoaim: ", AUTO_AIM_ON)
 
