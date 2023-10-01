@@ -29,6 +29,11 @@ args = vars(ap.parse_args())
 screenshotter = mss()
 
 def calc_coordinates():
+    """
+    Purpose: To return a list of all the words found in the dictionary file
+    Parameters: The dictionary file path
+    Returns: List of correct words found in dictionary file
+    """
     screen_width, screen_height = pyautogui.size()
     top = screen_height / 9
     left = screen_width / 5
@@ -51,7 +56,13 @@ def main():
     """
     screen_width, screen_height = pyautogui.size()
     bounding_box = {'top': 100, 'left': 0, 'width': screen_width, 'height': screen_height-100}
+
+    # Define the codec and create VideoWriter object
+    fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+    output_writer = cv2.VideoWriter('krunker_debug.mp4', fourcc, 20.0, (640,  480))
+
     AUTO_AIM_ON = False
+    DEBUG_VIDEO = False
 
     while True:
 
@@ -59,6 +70,13 @@ def main():
         if key_event.event_type == keyboard.KEY_DOWN and key_event.name == 'o':
             AUTO_AIM_ON = not AUTO_AIM_ON
             print("Autoaim: ", AUTO_AIM_ON)
+
+        elif key_event.event_type == keyboard.KEY_DOWN and key_event.name == 'b':
+            DEBUG_VIDEO = not DEBUG_VIDEO
+            print("Debugging...: ", DEBUG_VIDEO)
+
+        elif key_event.event_type == keyboard.KEY_DOWN and key_event.name == 'm':
+            break
 
         if AUTO_AIM_ON:
             scrt_img = screenshotter.grab(bounding_box)
@@ -80,6 +98,17 @@ def main():
 
             # pyautogui.dragTo(cursor_coords[0], cursor_coords[1], duration=.001)  # drag mouse to XY
             pyautogui.tripleClick(x=cursor_coords[0], y=cursor_coords[1])
+
+            if DEBUG_VIDEO:
+                print("writing krunker frame")
+                krunker_frame = cv2.circle(krunker_frame, cursor_coords, 5, (255,0,0), 5)
+                output_writer.write(krunker_frame)
+
+
+    output_writer.release()
+
+    # Closes all the frames
+    cv2.destroyAllWindows()
 
 
 main()
