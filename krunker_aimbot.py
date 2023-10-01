@@ -12,6 +12,9 @@ from mss import mss
 from PIL import Image
 from datetime import datetime
 import pyautogui
+from nametag_detection import get_enemey_coords
+
+pyautogui.FAILSAFE = True
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-c", "--coordinates",
@@ -39,16 +42,38 @@ def calc_coordinates():
     return top, left, krunker_window_width, krunker_window_height
 
 def main():
+    """
     if not args["coordinates"]:
         top, left, krunker_window_width, krunker_window_height = calc_coordinates()
     else:
         ...
+    """
+    screen_width, screen_height = pyautogui.size()
+    bounding_box = {'top': 100, 'left': 0, 'width': screen_width, 'height': screen_height-100}
 
-    bounding_box = {'top': 100, 'left': 0, 'width': 400, 'height': 300}
+    AUTO_AIM_ON = True
 
     while True:
-        sct_img = screenshotter.grab(bounding_box)
-        cv2.imshow('Krunker Window', np.array(sct_img))
+
+        scrt_img = screenshotter.grab(bounding_box)
+
+        krunker_frame = np.array(scrt_img)
+        # cv2.imshow('Krunker Window', krunker_frame)
+
+        # Masks arm to prevent accidental sleeve detection
+        mask = np.zeros(krunker_frame.shape[:2], dtype = "uint8")
+        (cX, cY) = (krunker_frame.shape[1] // 2, krunker_frame.shape[0] // 2)
+        cv2.rectangle(mask, (400, 400), (krunker_frame.shape[1] - 400, krunker_frame.shape[0] - 400), 255, -1)
+        cv2.rectangle(mask, (cX -75, cY + 250), (cX + 500, krunker_frame.shape[0]), 0, -1)
+        masked_image = cv2.bitwise_and(krunker_frame, krunker_frame, mask = mask)
+
+        cursor_coords = get_enemey_coords(masked_image)
+
+        if not cursor_coords:
+            continue
+
+        # pyautogui.dragTo(cursor_coords[0], cursor_coords[1], duration=.001)  # drag mouse to XY
+        pyautogui.tripleClick(x=cursor_coords[0], y=cursor_coords[1])
 
         if (cv2.waitKey(1) & 0xFF) == ord('q'):
             cv2.destroyAllWindows()
@@ -57,5 +82,10 @@ def main():
         if (cv2.waitKey(1) & 0xFF) == ord('p'):
             now = datetime.now().strftime("%H:%M:%S")
             cv2.imwrite(now+".jpg", np.array(sct_img))
+
+        """
+        if (cv2.waitKey(1) & 0xFF) == ord('a'):
+            AUTO_AIM_ON = not AUTO_AIM_ON
+        """
 
 main()
