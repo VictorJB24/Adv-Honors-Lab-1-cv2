@@ -12,12 +12,10 @@ from mss import mss
 from PIL import Image
 from datetime import datetime
 import pyautogui
+import keyboard
 from nametag_detection import get_enemey_coords
-from pynput.keyboard import Key, Listener
 
 pyautogui.FAILSAFE = True
-
-AUTO_AIM_ON = False
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-c", "--coordinates",
@@ -44,16 +42,6 @@ def calc_coordinates():
 
     return top, left, krunker_window_width, krunker_window_height
 
-def on_press(key):
-    # need to declare global to avoid UnboundLocalError from on_press
-    global AUTO_AIM_ON
-    try:
-        if key.char == ('a'):
-            print("Autoaim: ", AUTO_AIM_ON)
-            AUTO_AIM_ON = not AUTO_AIM_ON
-    except AttributeError:
-        return
-
 def main():
     """
     if not args["coordinates"]:
@@ -63,11 +51,13 @@ def main():
     """
     screen_width, screen_height = pyautogui.size()
     bounding_box = {'top': 100, 'left': 0, 'width': screen_width, 'height': screen_height-100}
-
-    with Listener(on_press=on_press) as listener:
-        listener.join()
+    AUTO_AIM_ON = False
 
     while True:
+
+        if keyboard.read_key() == "a":
+            AUTO_AIM_ON = not AUTO_AIM_ON
+            print("Autoaim: ", AUTO_AIM_ON)
 
         if AUTO_AIM_ON:
             scrt_img = screenshotter.grab(bounding_box)
