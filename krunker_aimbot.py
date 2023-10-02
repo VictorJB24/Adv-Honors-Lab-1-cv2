@@ -14,6 +14,7 @@ from datetime import datetime
 import pyautogui
 import keyboard
 from nametag_detection import get_enemey_coords
+from utils import view_playback
 
 pyautogui.FAILSAFE = True
 
@@ -57,12 +58,11 @@ def main():
     screen_width, screen_height = pyautogui.size()
     bounding_box = {'top': 100, 'left': 0, 'width': screen_width, 'height': screen_height-100}
 
-    # Define the codec and create VideoWriter object
-    fourcc = cv2.VideoWriter_fourcc(*'MJPG')
-    output_writer = cv2.VideoWriter('krunker_debug.mp4', fourcc, 20.0, (640,  480))
-
     AUTO_AIM_ON = False
     DEBUG_VIDEO = False
+    DISPLAY_DEBUG = False
+
+    debug_frames = {}
 
     while True:
 
@@ -73,11 +73,13 @@ def main():
 
         elif key_event.event_type == keyboard.KEY_DOWN and key_event.name == 'b':
             DEBUG_VIDEO = not DEBUG_VIDEO
-            print("Debugging...: ", DEBUG_VIDEO)
+            DISPLAY_DEBUG = True
+            print("Debugging: ", DEBUG_VIDEO)
 
         elif key_event.event_type == keyboard.KEY_DOWN and key_event.name == 'm':
             break
 
+        print("here")
         if AUTO_AIM_ON:
             scrt_img = screenshotter.grab(bounding_box)
 
@@ -94,16 +96,31 @@ def main():
             cursor_coords = get_enemey_coords(masked_image)
 
             if not cursor_coords:
+                print("NO cursor coords")
                 continue
 
             # pyautogui.dragTo(cursor_coords[0], cursor_coords[1], duration=.001)  # drag mouse to XY
             pyautogui.tripleClick(x=cursor_coords[0], y=cursor_coords[1])
 
             if DEBUG_VIDEO:
-                print("writing krunker frame")
-                krunker_frame = cv2.circle(krunker_frame, cursor_coords, 5, (255,0,0), 5)
-                output_writer.write(krunker_frame)
+                print("saving krunker frame")
+                debug_frames.append(krunker_frame)
 
+
+    if DISPLAY_DEBUG:
+        if "p" in input("Enter p to watch playback: "):
+            print("Press q to exit...")
+            print("LENGTH Of DEBUG: ", len(debug_frames))
+            view_playback(frames_list=debug_frames, draw_coords=)
+            frame = cv2.circle(frame, cursor_coords, 5, (255,0,0), 5)
+
+        accepted_inputs = ["yes", "y", "ye"]
+        if input("Save video playback? y/N: ").lower() in accepted_inputs:
+            # Define the codec and create VideoWriter object
+            fourcc = cv2.VideoWriter_fourcc(*"MP4V")
+            output_writer = cv2.VideoWriter("krunker_debug.mp4", fourcc, 30, (512,512))
+            frame = cv2.circle(frame, cursor_coords, 5, (255,0,0), 5)
+            output_writer.write(krunker_frame)
 
     output_writer.release()
 
@@ -111,13 +128,16 @@ def main():
     cv2.destroyAllWindows()
 
 
-main()
-
 if __name__ == "__main__":
 
+    main()
+
+    """
     if (cv2.waitKey(1) & 0xFF) == ord('q'):
         cv2.destroyAllWindows()
 
     if (cv2.waitKey(1) & 0xFF) == ord('p'):
         now = datetime.now().strftime("%H:%M:%S")
         cv2.imwrite(now+".jpg", np.array(sct_img))
+
+    """
