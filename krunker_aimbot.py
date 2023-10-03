@@ -15,6 +15,7 @@ import pyautogui
 import keyboard
 from nametag_detection import get_enemey_coords
 from utils import view_playback
+import time
 
 pyautogui.FAILSAFE = True
 
@@ -66,20 +67,21 @@ def main():
 
     while True:
 
-        key_event = keyboard.read_event(suppress=True)
-        if key_event.event_type == keyboard.KEY_DOWN and key_event.name == 'o':
+        if keyboard.is_pressed("p"):
             AUTO_AIM_ON = not AUTO_AIM_ON
             print("Autoaim: ", AUTO_AIM_ON)
+            # adding artificial delay to
+            time.sleep(.3)
 
-        elif key_event.event_type == keyboard.KEY_DOWN and key_event.name == 'b':
+        elif keyboard.is_pressed("b"):
             DEBUG_VIDEO = not DEBUG_VIDEO
             DISPLAY_DEBUG = True
             print("Debugging: ", DEBUG_VIDEO)
+            time.sleep(.3)
 
-        elif key_event.event_type == keyboard.KEY_DOWN and key_event.name == 'm':
+        elif keyboard.is_pressed("m"):
             break
 
-        print("here")
         if AUTO_AIM_ON:
             scrt_img = screenshotter.grab(bounding_box)
 
