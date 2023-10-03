@@ -8,7 +8,7 @@
 import cv2
 import argparse
 
-def view_playback(vid_path: string = None, frames_list: list = None,
+def view_playback(vid_path: str = None, frames_list: list = None,
                  draw_coords: list = None) -> None:
 
     if vid_path:
@@ -22,7 +22,7 @@ def view_playback(vid_path: string = None, frames_list: list = None,
             ret, frame = cap.read()
             if(ret):
 
-                if draw_coords
+                #if draw_coords
                 # adding rectangle on each frame
                 cv2.rectangle(frame, (100, 100), (500, 500), (0, 255, 0), 3)
 

@@ -106,7 +106,7 @@ def main():
                 print("saving krunker frame")
                 debug_frames.append(krunker_frame)
 
-
+    """
     if DISPLAY_DEBUG:
         if "p" in input("Enter p to watch playback: "):
             print("Press q to exit...")
@@ -123,6 +123,7 @@ def main():
             output_writer.write(krunker_frame)
 
     output_writer.release()
+    """
 
     # Closes all the frames
     cv2.destroyAllWindows()
