@@ -7,46 +7,74 @@
 
 import cv2
 import argparse
+import time
+import numpy as np
+from nametag_detection import get_enemey_coords
 
-def view_playback(vid_path: str = None, frames_list: list = None,
-                 draw_coords: list = None) -> None:
+current_time = time.strftime("%H_%M_%S", time.localtime())
+
+def view_playback(vid_path: str = None, frames_list: list = None) -> None:
 
     if vid_path:
         print("Reading from video path: ", vid_path)
         # reading the input
         cap = cv2.VideoCapture(vid_path)
 
-        # iterator for draw_coords; need to use while loop for VideoCapture
-        i = 0
-        while(True):
+        while True:
+            print("reading frame")
             ret, frame = cap.read()
-            if(ret):
-
-                #if draw_coords
-                # adding rectangle on each frame
-                cv2.rectangle(frame, (100, 100), (500, 500), (0, 255, 0), 3)
-
-                # writing the new frame in output
-                output.write(frame)
+            if ret:
+                print("\nthis is valid!!!")
                 cv2.imshow("output", frame)
-                if cv2.waitKey(1) & 0xFF == ord('s'):
-                    break
+
+        cap.release()
+
+    if frames_list:
+        print("Playing video from given list of frames")
+        for frame in frames_list:
+            cv2.imshow("Krunker Debug " + current_time, frame)
+
 
     cv2.destroyAllWindows()
-    output.release()
-    cap.release()
 
+def create_debug_video(vid_path):
+    new_vid_path = "krunker_vid_debug_" + current_time + ".avi"
+
+    # Define the codec and create VideoWriter object
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    output_writer = cv2.VideoWriter(new_vid_path, fourcc, 20.0, (640, 480))
+
+    cap = cv2.VideoCapture(vid_path)
+    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    i = 0
+    while i<250:
+        ret, frame = cap.read()
+        if ret:
+            # Masks arm to prevent accidental sleeve detection
+            mask = np.zeros(frame.shape[:2], dtype = "uint8")
+            (cX, cY) = (frame.shape[1] // 2, frame.shape[0] // 2)
+            cv2.rectangle(mask, (400, 400), (frame.shape[1] - 400, frame.shape[0] - 400), 255, -1)
+            cv2.rectangle(mask, (cX -75, cY + 250), (cX + 500, frame.shape[0]), 0, -1)
+            masked_image = cv2.bitwise_and(frame, frame, mask = mask)
+
+            cursor_coords = get_enemey_coords(masked_image)
+            person_identified_frame = cv2.circle(frame, cursor_coords, 5, (255,0,0), 5)
+
+            print("frame ", i, "/", frame_count, " ", cursor_coords)
+            i+=1
+            output_writer.write(person_identified_frame)
+
+    cap.release()
+    output_writer.release()
+    print("\n\nDONE!!! ", new_vid_path)
+    return new_vid_path
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("-c", "--coordinates",
-                    nargs=2,
-                    required = False,
-                    help = "Manually set coordinates of Krunker window (top left, bottom right)",
-                    metavar=('t_left', 'b_right')
-                    )
-    # possibly? ap.add_argument("-i", "--image", required = False, help = "Path to the image")
-    ap.add_argument("-v", "--video", required = False, help = "Path to the video")
+    ap.add_argument("-v", "--video", required = True,
+                   help = "Path to the krunker playback")
     args = vars(ap.parse_args())
 
-    view_playback("krunker_test.mov")
+    #new_vid_path = create_debug_video(args["video"])
+    #view_playback(vid_path=new_vid_path)
+    view_playback(vid_path=args["video"])

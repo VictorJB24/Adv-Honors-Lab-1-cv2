@@ -1,6 +1,5 @@
 EasyProcess==1.1
 entrypoint2==1.1
-keyboard==0.13.5
 mahotas==1.4.13
 MouseInfo==0.1.3
 mss==9.0.1
@@ -10,6 +9,7 @@ Pillow==10.0.1
 PyAutoGUI==0.9.54
 PyGetWindow==0.0.9
 PyMsgBox==1.0.9
+pynput==1.7.6
 pyobjc==10.0
 pyobjc-core==10.0
 pyobjc-framework-Accessibility==10.0
