@@ -23,21 +23,28 @@ def create_mask(frame, coordinates = None):
 
     return masked_image
 
+def test_view_playback(list):
+
+    for frame in list:
+        cv2.imshow("output", frame)
+        cv2.waitKey(0)
+
+    cv2.destroyAllWindows()
+
 def view_playback(vid_path):
 
-    if vid_path:
-        print("Reading from video path: ", vid_path)
-        # reading the input
-        cap = cv2.VideoCapture(vid_path)
+    print("Reading from video path: ", vid_path)
+    # reading the input
+    cap = cv2.VideoCapture(vid_path)
 
-        while True:
-            print("reading frame")
-            ret, frame = cap.read()
-            if ret:
-                print("\nthis is valid!!!")
-                cv2.imshow("output", frame)
+    while True:
+        print("reading frame")
+        ret, frame = cap.read()
+        if ret:
+            print("\nthis is valid!!!")
+            cv2.imshow("output", frame)
 
-        cap.release()
+    cap.release()
 
     cv2.destroyAllWindows()
 

@@ -15,7 +15,7 @@ from datetime import datetime
 import pyautogui
 from pynput import keyboard
 from nametag_detection import get_enemey_coords
-from utils import create_debug_video, create_mask
+from utils import create_debug_video, create_mask, test_view_playback
 import time
 
 # able to slam cursor to top left and the script ends; prevents crazy cursor
@@ -119,7 +119,8 @@ def main():
 
     if DISPLAY_DEBUG:
         print("LENGTH Of DEBUG: ", len(debug_frames))
-        create_debug_video(frames_list=debug_frames)
+        # create_debug_video(frames_list=debug_frames)
+        test_view_playback(debug_frames)
 
 if __name__ == "__main__":
     main()
