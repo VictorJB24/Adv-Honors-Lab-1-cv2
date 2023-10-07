@@ -15,7 +15,7 @@ from datetime import datetime
 import pyautogui
 from pynput import keyboard
 from nametag_detection import get_enemey_coords
-from utils import view_playback
+from utils import create_debug_video, create_mask
 import time
 
 # able to slam cursor to top left and the script ends; prevents crazy cursor
@@ -102,13 +102,7 @@ def main():
             krunker_frame = np.array(scrt_img)
             # cv2.imshow('Krunker Window', krunker_frame)
 
-            # Masks arm to prevent accidental sleeve detection
-            mask = np.zeros(krunker_frame.shape[:2], dtype = "uint8")
-            (cX, cY) = (krunker_frame.shape[1] // 2, krunker_frame.shape[0] // 2)
-            cv2.rectangle(mask, (400, 400), (krunker_frame.shape[1] - 400, krunker_frame.shape[0] - 400), 255, -1)
-            cv2.rectangle(mask, (cX -75, cY + 250), (cX + 500, krunker_frame.shape[0]), 0, -1)
-            masked_image = cv2.bitwise_and(krunker_frame, krunker_frame, mask = mask)
-
+            masked_image = create_mask(krunker_frame)
             cursor_coords = get_enemey_coords(masked_image)
 
             if not cursor_coords:
@@ -125,21 +119,7 @@ def main():
 
     if DISPLAY_DEBUG:
         print("LENGTH Of DEBUG: ", len(debug_frames))
-        view_playback(frames_list=debug_frames)
-
-        accepted_inputs = ["yes", "y", "ye"]
-        if input("Save video playback? y/N: ").lower() in accepted_inputs:
-            # Define the codec and create VideoWriter object
-            fourcc = cv2.VideoWriter_fourcc(*"MP4V")
-            output_writer = cv2.VideoWriter("krunker_debug.mp4", fourcc, 30, (512,512))
-            for frame in debug_frames:
-                output_writer.write(debug_frames)
-
-    output_writer.release()
-
-    # Closes all the frames
-    cv2.destroyAllWindows()
-
+        create_debug_video(frames_list=debug_frames)
 
 if __name__ == "__main__":
     main()
