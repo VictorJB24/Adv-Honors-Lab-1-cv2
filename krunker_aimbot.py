@@ -11,12 +11,10 @@ import numpy as np
 import cv2
 from mss import mss
 from PIL import Image
-from datetime import datetime
 import pyautogui
 from pynput import keyboard
-from nametag_detection import get_enemey_coords
-from utils import create_debug_video, create_mask, test_view_playback
-import time
+from nametag_detection import create_mask, get_enemey_coords
+from utils import create_debug_video, test_view_playback
 
 # able to slam cursor to top left and the script ends; prevents crazy cursor
 pyautogui.FAILSAFE = True
@@ -109,8 +107,14 @@ def main():
                 print("NO cursor coords found")
                 continue
 
-            # pyautogui.dragTo(cursor_coords[0], cursor_coords[1], duration=.001)  # drag mouse to XY
             pyautogui.tripleClick(x=cursor_coords[0], y=cursor_coords[1])
+
+            """
+            TODO
+            FPS counter in top left, confidence interval counter top left
+            confidence interval to calculate how confident the script is of it being a person
+            Need above certain confidence interval threshold to actually fire
+            """
 
             if DEBUG_VIDEO:
                 print("saving krunker frame")

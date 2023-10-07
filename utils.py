@@ -9,19 +9,9 @@ import cv2
 import argparse
 import time
 import numpy as np
-from nametag_detection import get_enemey_coords
+from nametag_detection import create_mask, get_enemey_coords
 
 current_time = time.strftime("%H_%M_%S", time.localtime())
-
-def create_mask(frame, coordinates = None):
-    # Masks arm to prevent accidental sleeve detection
-    mask = np.zeros(frame.shape[:2], dtype = "uint8")
-    (cX, cY) = (frame.shape[1] // 2, frame.shape[0] // 2)
-    cv2.rectangle(mask, (400, 400), (frame.shape[1] - 400, frame.shape[0] - 400), 255, -1)
-    cv2.rectangle(mask, (cX -75, cY + 250), (cX + 500, frame.shape[0]), 0, -1)
-    masked_image = cv2.bitwise_and(frame, frame, mask = mask)
-
-    return masked_image
 
 def test_view_playback(list):
 

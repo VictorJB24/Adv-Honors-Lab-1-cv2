@@ -81,6 +81,16 @@ def get_enemey_coords(image):
 
     return cursor_coords
 
+def create_mask(frame, coordinates = None):
+    # Masks arm to prevent accidental sleeve detection
+    mask = np.zeros(frame.shape[:2], dtype = "uint8")
+    (cX, cY) = (frame.shape[1] // 2, frame.shape[0] // 2)
+    cv2.rectangle(mask, (400, 400), (frame.shape[1] - 400, frame.shape[0] - 400), 255, -1)
+    cv2.rectangle(mask, (cX -75, cY + 250), (cX + 500, frame.shape[0]), 0, -1)
+    masked_image = cv2.bitwise_and(frame, frame, mask = mask)
+
+    return masked_image
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("-i", "--image", required = True, help = "Path to the image")
@@ -88,13 +98,7 @@ if __name__ == "__main__":
 
     image = cv2.imread(args["image"])
 
-    # Masks arm to prevent accidental sleeve detection
-    mask = np.zeros(image.shape[:2], dtype = "uint8")
-    (cX, cY) = (image.shape[1] // 2, image.shape[0] // 2)
-    cv2.rectangle(mask, (400, 400), (image.shape[1] - 400, image.shape[0] - 400), 255, -1)
-    cv2.rectangle(mask, (cX -75, cY + 250), (cX + 500, image.shape[0]), 0, -1)
-    masked_image = cv2.bitwise_and(image, image, mask = mask)
-
+    masked_image = create_mask(image)
     cursor_coords = get_enemey_coords(masked_image)
 
     # For testing, display corners of nametag
