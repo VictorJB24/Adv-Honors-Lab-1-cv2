@@ -58,36 +58,17 @@ def on_release(key):
 listener = keyboard.Listener(on_release=on_release)
 listener.start()
 
-def calc_mask_coordinates():
-    """
-    Purpose: Calculate coordinates of screenshotter window for Krunker
-    Parameters: None
-    Returns: Integer coordinates
-    """
-    screen_width, screen_height = pyautogui.size()
-
-    krunker_win_top = screen_height / 3
-    krunker_win_left = screen_width / 4
-
-    krunker_win_width = int(screen_width * (6/7)) - krunker_win_left
-
-    # canvas = np.zeros((krunker_window_width, krunker_window_height, 3), dtype = "uint8")
-    # cv2.imshow("Canvas", canvas)
-    # cv2.waitKey(0)
-
-    return krunker_win_top, krunker_win_left, krunker_win_width, screen_height
+def set_custom_window_coords():
+    ...
 
 def main():
-    if not args["window_set"]:
-        top, left, width, height = calc_coordinates()
-
-    else:
-        ...
+    if args["window_set"]:
+        top, left, width, height = set_custom_window_coords()
 
     screen_width, screen_height = pyautogui.size()
-    screenshotter_bounding_box = {'top': top, 'left': left,
-                                  'width': width,
-                                  'height': height}
+    screenshotter_bounding_box = {'top': 0, 'left': 0,
+                                  'width': screen_width,
+                                  'height': screen_height}
 
     debug_frames = []
 
