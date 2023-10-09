@@ -48,7 +48,7 @@ def create_debug_video(vid_path: str = None, frames_list: list = None):
     cap = cv2.VideoCapture(vid_path)
     frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     i = 0
-    while i<250:
+    while i < 250:
         ret, frame = cap.read()
         if ret:
             masked_image = create_mask(frame)

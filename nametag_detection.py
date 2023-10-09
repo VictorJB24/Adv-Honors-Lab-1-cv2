@@ -99,15 +99,15 @@ if __name__ == "__main__":
     image = cv2.imread(args["image"])
 
     masked_image = create_mask(image)
-    cursor_coords = get_enemey_coords(masked_image)
+    enemy_coords = get_enemey_coords(masked_image)
+
+    print("Player found at coords: ", enemy_coords)
 
     # For testing, display corners of nametag
-    """
-    image = cv2.circle(image, (xcoords[len(xcoords) -1], ycoords[len(ycoords) -1]), 2, (255,0,0), 5) # Top right
-    image = cv2.circle(image, (xcoords[0], ycoords[0]), 2, (255,0,0), 5) # Top left
-    """
+    # image = cv2.circle(image, (xcoords[len(xcoords) -1], ycoords[len(ycoords) -1]), 2, (255,0,0), 5) # Top right
+    # image = cv2.circle(image, (xcoords[0], ycoords[0]), 2, (255,0,0), 5) # Top left
 
-    image = cv2.circle(image, cursor_coords, 5, (255,0,0), 5)
+    image = cv2.circle(image, enemy_coords, 5, (255,0,0), 20)
     cv2.imshow("Testing Player Detection...", image)
 
     cv2.waitKey(0)

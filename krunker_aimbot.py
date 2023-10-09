@@ -25,6 +25,14 @@ DEBUG_VIDEO = False
 DISPLAY_DEBUG = False
 RUN_SCREEN_DETECTION = True
 
+ap = argparse.ArgumentParser()
+ap.add_argument("-w", "--window_set", required = False,
+               help = "Set custom coordinates for screenshotter window")
+args = vars(ap.parse_args())
+
+screenshotter = mss()
+
+# needs to be defined up here for keyboard.Listener(on_release) 
 def on_release(key):
     key = str(key).strip("'")
 
@@ -47,29 +55,17 @@ def on_release(key):
 
     return
 
-ap = argparse.ArgumentParser()
-ap.add_argument("-c", "--coordinates",
-                nargs=2,
-                required = False,
-                help = "Manually set coordinates of Krunker window (top left, bottom right)",
-                metavar=('t_left', 'b_right')
-                )
-args = vars(ap.parse_args())
-
-screenshotter = mss()
-
 listener = keyboard.Listener(on_release=on_release)
 listener.start()
 
 def calc_coordinates():
     """
-    Purpose: To return a list of all the words found in the dictionary file
-    Parameters: The dictionary file path
-    Returns: List of correct words found in dictionary file
+    Purpose: Calculate coordinates of screenshotter window for Krunker
+    Parameters: None
+    Returns: Integer coordinates
     """
     screen_width, screen_height = pyautogui.size()
-    top = screen_height / 9
-    left = screen_width / 5
+    top = screen_height / 7
 
     krunker_window_width = int(screen_width * .7)
     krunker_window_height = int(screen_height * .6)
@@ -82,26 +78,33 @@ def calc_coordinates():
 
 def main():
     """
-    if not args["coordinates"]:
+    if not args["window_set"]:
         top, left, krunker_window_width, krunker_window_height = calc_coordinates()
     else:
         ...
     """
     screen_width, screen_height = pyautogui.size()
-    bounding_box = {'top': 100, 'left': 0, 'width': screen_width, 'height': screen_height-100}
+    screenshotter_bounding_box = {'top': 100, 'left': 0,
+                                  'width': screen_width,
+                                  'height': screen_height-100}
 
     debug_frames = []
 
     while RUN_SCREEN_DETECTION:
 
         if AUTO_AIM_ON:
-            scrt_img = screenshotter.grab(bounding_box)
+            scrt_img = screenshotter.grab(screenshotter_bounding_box)
 
             krunker_frame = np.array(scrt_img)
             # cv2.imshow('Krunker Window', krunker_frame)
 
             masked_image = create_mask(krunker_frame)
             cursor_coords = get_enemey_coords(masked_image)
+
+            if DEBUG_VIDEO:
+                print("saving krunker frame")
+                krunker_frame = cv2.circle(krunker_frame, cursor_coords, 5, (255,0,0), 5)
+                debug_frames.append(krunker_frame)
 
             if not cursor_coords:
                 print("NO cursor coords found")
@@ -115,11 +118,6 @@ def main():
             confidence interval to calculate how confident the script is of it being a person
             Need above certain confidence interval threshold to actually fire
             """
-
-            if DEBUG_VIDEO:
-                print("saving krunker frame")
-                krunker_frame = cv2.circle(krunker_frame, cursor_coords, 5, (255,0,0), 5)
-                debug_frames.append(krunker_frame)
 
     if DISPLAY_DEBUG:
         print("LENGTH Of DEBUG: ", len(debug_frames))
