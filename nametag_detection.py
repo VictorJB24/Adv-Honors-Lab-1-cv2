@@ -79,6 +79,7 @@ def get_enemey_coords(image):
     # Finding median of coords lists
     cursor_coords = (xcoords[len(xcoords) // 2], ycoords[len(ycoords) // 2] + yoffset)
 
+    # print("COORDS HERE: ", cursor_coords)
     return cursor_coords
 
 def create_mask(frame, coordinates = None):
