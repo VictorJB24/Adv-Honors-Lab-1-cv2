@@ -49,7 +49,7 @@ def get_enemey_coords(image):
     canny = cv2.Canny(thresh, 30, 150)
 
     # Parse contours for coordinates
-    (contours, _) = cv2.findContours(canny.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    (contours, _) = cv2.findContours(canny, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     if len(contours) < 1:
         return None
@@ -84,12 +84,11 @@ def get_enemey_coords(image):
 
 def create_mask(frame, coordinates = None):
     # Masks arm to prevent accidental sleeve detection
-    mask = np.zeros(frame.shape[:2], dtype = "uint8")
-    (cX, cY) = (frame.shape[1] // 2, frame.shape[0] // 2)
-    cv2.rectangle(mask, (400, 400), (frame.shape[1] - 400, frame.shape[0] - 400), 255, -1)
-    cv2.rectangle(mask, (cX -75, cY + 250), (cX + 500, frame.shape[0]), 0, -1)
-    masked_image = cv2.bitwise_and(frame, frame, mask = mask)
-
+    sideMask = np.zeros(frame.shape[:2], dtype = "uint8")
+    (cX, cY) = (frame.shape[1], frame.shape[0])
+    cv2.rectangle(sideMask, (cX//4, cY//5), (cX - cX//5, cY - cY//4), 255, -1)
+    #cv2.rectangle(sideMask, (cX -75, cY + 150), (cX + 500, frame.shape[0]), 0, -1)
+    masked_image = cv2.bitwise_and(frame, frame, mask = sideMask)
     return masked_image
 
 if __name__ == "__main__":

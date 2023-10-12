@@ -12,9 +12,11 @@ import cv2
 from mss import mss
 from PIL import Image
 import pyautogui
+import pydirectinput
 from pynput import keyboard
 from nametag_detection import create_mask, get_enemey_coords
 from utils import create_debug_video, test_view_playback
+import time
 
 # able to slam cursor to top left and the script ends; prevents crazy cursor
 pyautogui.FAILSAFE = True
@@ -73,7 +75,9 @@ def main():
     # print(screen_width, " ", screen_height)
 
     debug_frames = []
-
+    currtime = 0
+    isMouseDown = False
+    
     while RUN_SCREEN_DETECTION:
 
         if AUTO_AIM_ON:
@@ -83,22 +87,33 @@ def main():
             # print(krunker_frame.shape)
             # cv2.imshow('Krunker Window', krunker_frame)
 
-            # masked_image = create_mask(krunker_frame)
-            cursor_coords = get_enemey_coords(krunker_frame)
+            masked_image = create_mask(krunker_frame)
+            cursor_coords = get_enemey_coords(masked_image)
 
             if DEBUG_VIDEO:
-                print("saving krunker frame")
-                krunker_frame = cv2.circle(krunker_frame, cursor_coords, 5, (255,0,0), 5)
+                #print("saving krunker frame")
+                krunker_frame = cv2.circle(masked_image, cursor_coords, 5, (255,0,0), 5)
+                krunker_frame = cv2.circle(masked_image, pydirectinput.position(), 5, (0,255,0), 5)
                 debug_frames.append(krunker_frame)
 
             if not cursor_coords:
-                print("NO cursor coords found")
+                #print("NO cursor coords found")
+                pydirectinput.mouseUp()
+                isMouseDown = False
                 continue
 
-            # divide by two because krunker_frame is scaled to twice the pyautogui
-            # coordinates
-            pyautogui.tripleClick(x=cursor_coords[0]/2, y=cursor_coords[1]/2)
+            cX = masked_image.shape[1] //2
+            cY = masked_image.shape[0] //2
 
+            # divide by two because krunker_frame is scaled to twice the pydirectinput
+            # coordinates
+            pydirectinput.mouseDown()
+            #if not isMouseDown:
+            isMouseDown = True
+            #print('shoot')
+             
+            #pydirectinput.move(abs(cX//2 - cursor_coords[0]//2), abs(cY//2 - cursor_coords[1]//2))
+            pydirectinput.moveTo(cursor_coords[0], cursor_coords[1])
             """
             TODO
             FPS counter in top left, confidence interval counter top left
