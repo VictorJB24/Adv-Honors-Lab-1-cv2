@@ -68,6 +68,8 @@ def main():
         top, left, width, height = set_custom_window_coords()
 
     screen_width, screen_height = pyautogui.size()
+    print("Screen width: ", screen_width)
+    print("Screen height: ", screen_height)
     screenshotter_bounding_box = {'top': 0, 'left': 0,
                                   'width': screen_width,
                                   'height': screen_height}
@@ -84,7 +86,6 @@ def main():
             scrt_img = screenshotter.grab(screenshotter_bounding_box)
 
             krunker_frame = np.array(scrt_img)
-            # print(krunker_frame.shape)
             # cv2.imshow('Krunker Window', krunker_frame)
 
             masked_image = create_mask(krunker_frame)
@@ -113,7 +114,12 @@ def main():
             #print('shoot')
              
             #pydirectinput.move(abs(cX//2 - cursor_coords[0]//2), abs(cY//2 - cursor_coords[1]//2))
-            pydirectinput.moveTo(cursor_coords[0], cursor_coords[1])
+            newX = cursor_coords[0] - cX
+            newY = cursor_coords[1] - cY
+            pydirectinput.move(newX, newY)
+            #pydirectinput.moveTo(cursor_coords[0], cursor_coords[1])
+            #print("X: {} Y: {}".format(cursor_coords[0], cursor_coords[1]))
+            #print(pyautogui.position())
             """
             TODO
             FPS counter in top left, confidence interval counter top left

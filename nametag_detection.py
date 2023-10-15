@@ -9,6 +9,7 @@ import numpy as np
 import argparse
 import cv2
 import mahotas
+import time
 
 def avg(lst):
     """
@@ -37,6 +38,7 @@ def get_enemey_coords(image):
     Parameters: The dictionary file path
     Returns: List of correct words found in dictionary file
     """
+    currTime = time.time()
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     #image = cv2.bitwise_and(image, image, mask = mask) # use this to skip BGR2GRAY (for testing)
 
@@ -62,11 +64,13 @@ def get_enemey_coords(image):
             ycoords.append(int(coordinate[0][1]))
 
     # Cleaning up list
+    """
     xcoords.sort()
     ycoords.sort()
     xcoords = reject_outliers(xcoords)
     ycoords = reject_outliers(ycoords)
-
+    """
+    
     # Fix detection when multiple players on screen (separates list of coords for only first nametag detected)
     # 260 is approximate (slightly arbitrary) list split value
     xcoords = xcoords[:260]
@@ -80,6 +84,7 @@ def get_enemey_coords(image):
     cursor_coords = (xcoords[len(xcoords) // 2], ycoords[len(ycoords) // 2] + yoffset)
 
     # print("COORDS HERE: ", cursor_coords)
+    print(time.time() - currTime)
     return cursor_coords
 
 def create_mask(frame, coordinates = None):
