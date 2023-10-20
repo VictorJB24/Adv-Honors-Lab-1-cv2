@@ -8,29 +8,6 @@
 import numpy as np
 import argparse
 import cv2
-import mahotas
-import time
-
-def avg(lst):
-    """
-    Purpose: To return a list of all the words found in the dictionary file
-    Parameters: The dictionary file path
-    Returns: List of correct words found in dictionary file
-    """
-    return sum(lst) / len(lst)
-
-def reject_outliers(data, m = 2.):
-    """
-    Purpose: To return a list of all the words found in the dictionary file
-    Parameters: The dictionary file path
-    Returns: List of correct words found in dictionary file
-    """
-    #copied off online, no clue how it works
-    data = np.array(data)
-    d = np.abs(data - np.median(data))
-    mdev = np.median(d)
-    s = d/mdev if mdev else np.zeros(len(d))
-    return data[s<m]
 
 def get_enemey_coords(image):
     """
@@ -38,9 +15,7 @@ def get_enemey_coords(image):
     Parameters: The dictionary file path
     Returns: List of correct words found in dictionary file
     """
-    currTime = time.time()
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    #image = cv2.bitwise_and(image, image, mask = mask) # use this to skip BGR2GRAY (for testing)
 
     # Threshold for only extremely high contrast areas (which will almost always be only nametag)
     thresh = image.copy()
@@ -55,46 +30,28 @@ def get_enemey_coords(image):
 
     if len(contours) < 1:
         return None
-
-    xcoords = []
-    ycoords = []
-    for contour in contours:
-        for coordinate in contour.tolist():
-            xcoords.append(int(coordinate[0][0]))
-            ycoords.append(int(coordinate[0][1]))
-
-    # Cleaning up list
-    """
-    xcoords.sort()
-    ycoords.sort()
-    xcoords = reject_outliers(xcoords)
-    ycoords = reject_outliers(ycoords)
-    """
     
-    # Fix detection when multiple players on screen (separates list of coords for only first nametag detected)
-    # 260 is approximate (slightly arbitrary) list split value
-    xcoords = xcoords[:260]
-    ycoords = ycoords[:260]
+    coords = []
+   
+    # Get coordinates of left-most contour found
+    for coordinate in contours[0].tolist():
+        coords.append([int(coordinate[0][0]), int(coordinate[0][1])])
 
-    # Adjusting y offset for cursor based on size (distance) of nametag
-    ydist = ycoords[len(ycoords) -1] - ycoords[0]
-    yoffset = ydist * 2 # multiplying distance by 4 seemed to work to find the center of the player
+    # Adjusting y offset for cursor based on size of nametag, which automatically 
+    # adjusts based on the distance from the player to the nametag
+    yoffset = (coords[len(coords) - 1][1] - coords[0][1]) * 2
 
-    # Finding median of coords lists
-    # divide by two because krunker_frame is scaled to twice the pydirectinput
-    # coordinates
-    cursor_coords = (xcoords[len(xcoords) // 2], ycoords[len(ycoords) // 2] + yoffset)
+    # Finding median of coords lists and adjust offset to go from nametag to enemy
+    medianCoords = coords[len(coords) // 2]
+    cursor_coords = (medianCoords[0], medianCoords[1] + yoffset)
 
-    # print("COORDS HERE: ", cursor_coords)
-    print(time.time() - currTime)
     return cursor_coords
 
 def create_mask(frame, coordinates = None):
-    # Masks arm to prevent accidental sleeve detection
+    # Masks screen so this program only reads info from the game itself
     sideMask = np.zeros(frame.shape[:2], dtype = "uint8")
     (cX, cY) = (frame.shape[1], frame.shape[0])
     cv2.rectangle(sideMask, (cX//4, cY//5), (cX - cX//5, cY - cY//4), 255, -1)
-    #cv2.rectangle(sideMask, (cX -75, cY + 150), (cX + 500, frame.shape[0]), 0, -1)
     masked_image = cv2.bitwise_and(frame, frame, mask = sideMask)
     
     return masked_image

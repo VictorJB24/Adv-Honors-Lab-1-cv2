@@ -14,12 +14,11 @@ from PIL import Image
 from pynput import keyboard
 from nametag_detection import create_mask, get_enemey_coords
 from utils import create_debug_video, test_view_playback
-import time
 
 try:
-    import pydirectinput
+    import pydirectinput as pyautogui # For Windows
 except AttributeError:
-    import pyautogui
+    import pyautogui                  # For Mac
 
 # able to slam cursor to top left and the script ends; prevents crazy cursor
 pyautogui.FAILSAFE = True
@@ -73,8 +72,6 @@ def set_custom_window_coords(scst_bounding_box):
 
 def main():
     screen_width, screen_height = pyautogui.size()
-    print("Screen width: ", screen_width)
-    print("Screen height: ", screen_height)
     screenshotter_bounding_box = {'top': 0, 'left': 0,
                                   'width': screen_width,
                                   'height': screen_height}
@@ -107,31 +104,23 @@ def main():
                 debug_frames.append(krunker_frame)
 
             if not cursor_coords:
-                print("NO cursor coords found")
-                # pyautogui.mouseUp()
+                pyautogui.mouseUp()
                 continue
-
+            
+            # Coords for center of screen
             cX = masked_image.shape[1] // 2
             cY = masked_image.shape[0] // 2
 
-            newX = cursor_coords[0] - cX
-            newY = cursor_coords[1] - pcY
-            pyautogui.moveTo(newX, newY)
-
-            # divide by two because krunker_frame is scaled to twice the pydirectinput
-            # coordinates
-            # pydirectinput.mouseDown()
-
-            #pydirectinput.move(abs(cX//2 - cursor_coords[0]//2), abs(cY//2 - cursor_coords[1]//2))
-            """
+            # Distance from center of screen to desired coordinates
             newX = cursor_coords[0] - cX
             newY = cursor_coords[1] - cY
-            pydirectinput.move(newX, newY)
-            #pydirectinput.moveTo(cursor_coords[0], cursor_coords[1])
-            #print("X: {} Y: {}".format(cursor_coords[0], cursor_coords[1]))
-            #print(pyautogui.position())
-            """
 
+
+            pyautogui.mouseDown()
+            # Moves the center of the screen to the coordinates, thus aligning the crosshair
+            # (at the center of the screen) with the enemy
+            pyautogui.move(newX, newY)
+            
             """
             TODO
             FPS counter in top left, confidence interval counter top left
@@ -141,7 +130,6 @@ def main():
 
     if DISPLAY_DEBUG:
         print("LENGTH Of DEBUG: ", len(debug_frames))
-        # create_debug_video(frames_list=debug_frames)
         test_view_playback(debug_frames)
 
 if __name__ == "__main__":
