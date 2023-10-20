@@ -11,12 +11,15 @@ import numpy as np
 import cv2
 from mss import mss
 from PIL import Image
-import pyautogui
-import pydirectinput
 from pynput import keyboard
 from nametag_detection import create_mask, get_enemey_coords
 from utils import create_debug_video, test_view_playback
 import time
+
+try:
+    import pydirectinput
+except AttributeError:
+    import pyautogui
 
 # able to slam cursor to top left and the script ends; prevents crazy cursor
 pyautogui.FAILSAFE = True
@@ -60,13 +63,15 @@ def on_release(key):
 listener = keyboard.Listener(on_release=on_release)
 listener.start()
 
-def set_custom_window_coords():
-    ...
+def set_custom_window_coords(scst_bounding_box):
+    scrt_img = screenshotter.grab(scst_bounding_box)
+    krunker_frame = np.array(scrt_img)
+
+    masked_image = create_mask(krunker_frame)
+    cv2.imshow('Masked Krunker Window', masked_image)
+    cv2.waitKey(0)
 
 def main():
-    if args["window_set"]:
-        top, left, width, height = set_custom_window_coords()
-
     screen_width, screen_height = pyautogui.size()
     print("Screen width: ", screen_width)
     print("Screen height: ", screen_height)
@@ -74,12 +79,16 @@ def main():
                                   'width': screen_width,
                                   'height': screen_height}
 
-    # print(screen_width, " ", screen_height)
+
+    if args["window_set"]:
+        # used to set the masking which our image detection will focus in on
+        # mask_top, mask_left, mask_width, mask_height = set_custom_window_coords(screenshotter_bounding_box)
+        set_custom_window_coords(screenshotter_bounding_box)
+
+    print(screen_width, " ", screen_height)
 
     debug_frames = []
-    currtime = 0
-    isMouseDown = False
-    
+
     while RUN_SCREEN_DETECTION:
 
         if AUTO_AIM_ON:
@@ -94,32 +103,35 @@ def main():
             if DEBUG_VIDEO:
                 #print("saving krunker frame")
                 krunker_frame = cv2.circle(masked_image, cursor_coords, 5, (255,0,0), 5)
-                krunker_frame = cv2.circle(masked_image, pydirectinput.position(), 5, (0,255,0), 5)
+                krunker_frame = cv2.circle(masked_image, pyautogui.position(), 5, (0,255,0), 5)
                 debug_frames.append(krunker_frame)
 
             if not cursor_coords:
-                #print("NO cursor coords found")
-                pydirectinput.mouseUp()
-                isMouseDown = False
+                print("NO cursor coords found")
+                # pyautogui.mouseUp()
                 continue
 
-            cX = masked_image.shape[1] //2
-            cY = masked_image.shape[0] //2
+            cX = masked_image.shape[1] // 2
+            cY = masked_image.shape[0] // 2
+
+            newX = cursor_coords[0] - cX
+            newY = cursor_coords[1] - pcY
+            pyautogui.moveTo(newX, newY)
 
             # divide by two because krunker_frame is scaled to twice the pydirectinput
             # coordinates
-            pydirectinput.mouseDown()
-            #if not isMouseDown:
-            isMouseDown = True
-            #print('shoot')
-             
+            # pydirectinput.mouseDown()
+
             #pydirectinput.move(abs(cX//2 - cursor_coords[0]//2), abs(cY//2 - cursor_coords[1]//2))
+            """
             newX = cursor_coords[0] - cX
             newY = cursor_coords[1] - cY
             pydirectinput.move(newX, newY)
             #pydirectinput.moveTo(cursor_coords[0], cursor_coords[1])
             #print("X: {} Y: {}".format(cursor_coords[0], cursor_coords[1]))
             #print(pyautogui.position())
+            """
+
             """
             TODO
             FPS counter in top left, confidence interval counter top left

@@ -81,6 +81,8 @@ def get_enemey_coords(image):
     yoffset = ydist * 2 # multiplying distance by 4 seemed to work to find the center of the player
 
     # Finding median of coords lists
+    # divide by two because krunker_frame is scaled to twice the pydirectinput
+    # coordinates
     cursor_coords = (xcoords[len(xcoords) // 2], ycoords[len(ycoords) // 2] + yoffset)
 
     # print("COORDS HERE: ", cursor_coords)
@@ -94,6 +96,7 @@ def create_mask(frame, coordinates = None):
     cv2.rectangle(sideMask, (cX//4, cY//5), (cX - cX//5, cY - cY//4), 255, -1)
     #cv2.rectangle(sideMask, (cX -75, cY + 150), (cX + 500, frame.shape[0]), 0, -1)
     masked_image = cv2.bitwise_and(frame, frame, mask = sideMask)
+    
     return masked_image
 
 if __name__ == "__main__":
