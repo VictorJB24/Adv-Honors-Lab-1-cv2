@@ -13,15 +13,15 @@ from mss import mss
 from PIL import Image
 from pynput import keyboard
 from nametag_detection import create_mask, get_enemey_coords
-from utils import create_debug_video, test_view_playback
+from utils import create_debug_video, view_playback
 
 try:
-    import pydirectinput as pyautogui # For Windows
+    import pydirectinput as pymouseutil # For Windows
 except AttributeError:
-    import pyautogui                  # For Mac
+    import pyautogui as pymouseutil     # For Mac
 
 # able to slam cursor to top left and the script ends; prevents crazy cursor
-pyautogui.FAILSAFE = True
+pymouseutil.FAILSAFE = True
 
 # need to be global so they can be accessed in on_release function; necessasry for pynput
 AUTO_AIM_ON = False
@@ -31,7 +31,8 @@ RUN_SCREEN_DETECTION = True
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-w", "--window_set", required = False,
-               help = "Set custom coordinates for screenshotter window")
+               help = "Set custom coordinates for screenshotter window",
+               action="store_true") # no input is required for argument; just the flag
 args = vars(ap.parse_args())
 
 screenshotter = mss()
@@ -63,6 +64,11 @@ listener = keyboard.Listener(on_release=on_release)
 listener.start()
 
 def set_custom_window_coords(scst_bounding_box):
+    """
+    Purpose: Ability for user to set their own Krunker window coordinates
+    Parameters: The bounding box for the screenshotter; the entire screen coords
+    Returns: List of the custom krunker window dimensions
+    """
     scrt_img = screenshotter.grab(scst_bounding_box)
     krunker_frame = np.array(scrt_img)
 
@@ -70,22 +76,25 @@ def set_custom_window_coords(scst_bounding_box):
     cv2.imshow('Masked Krunker Window', masked_image)
     cv2.waitKey(0)
 
+    cv2.destroyAllWindows()
+
 def main():
-    screen_width, screen_height = pyautogui.size()
+    screen_width, screen_height = pymouseutil.size()
     screenshotter_bounding_box = {'top': 0, 'left': 0,
                                   'width': screen_width,
                                   'height': screen_height}
 
-
     if args["window_set"]:
         # used to set the masking which our image detection will focus in on
-        # mask_top, mask_left, mask_width, mask_height = set_custom_window_coords(screenshotter_bounding_box)
-        set_custom_window_coords(screenshotter_bounding_box)
+        mask_dimensions = set_custom_window_coords(screenshotter_bounding_box)
 
-    print(screen_width, " ", screen_height)
-
+    # saving all of the video frames here
     debug_frames = []
 
+    print("\nPremiere Krunkie Aimbot v.1.0\n© 2023 Krunkie Plays Corp.\n\n")
+    print("Usage:\n1. 'p' to toggle the detection\n2. 'v' to toggle the screen recording\
+           \n3. 'm' to quit the program and watch playback if a recording was taken\
+           \n\nAimbot is running...")
     while RUN_SCREEN_DETECTION:
 
         if AUTO_AIM_ON:
@@ -95,18 +104,23 @@ def main():
             # cv2.imshow('Krunker Window', krunker_frame)
 
             masked_image = create_mask(krunker_frame)
+            cv2.imshow('Testing', masked_image)
+
             cursor_coords = get_enemey_coords(masked_image)
 
+            # debug video will only be saved if aimbot is on
             if DEBUG_VIDEO:
-                #print("saving krunker frame")
+                # drawing circle on enemy; will work even if cursor_coords is None
                 krunker_frame = cv2.circle(masked_image, cursor_coords, 5, (255,0,0), 5)
-                krunker_frame = cv2.circle(masked_image, pyautogui.position(), 5, (0,255,0), 5)
+
+                # drawing circle on current mouse position
+                krunker_frame = cv2.circle(masked_image, pymouseutil.position(), 5, (0,255,0), 5)
                 debug_frames.append(krunker_frame)
 
             if not cursor_coords:
-                pyautogui.mouseUp()
+                pymouseutil.mouseUp()
                 continue
-            
+
             # Coords for center of screen
             cX = masked_image.shape[1] // 2
             cY = masked_image.shape[0] // 2
@@ -116,21 +130,16 @@ def main():
             newY = cursor_coords[1] - cY
 
 
-            pyautogui.mouseDown()
+            pymouseutil.mouseDown()
             # Moves the center of the screen to the coordinates, thus aligning the crosshair
             # (at the center of the screen) with the enemy
-            pyautogui.move(newX, newY)
-            
-            """
-            TODO
-            FPS counter in top left, confidence interval counter top left
-            confidence interval to calculate how confident the script is of it being a person
-            Need above certain confidence interval threshold to actually fire
-            """
+            pymouseutil.move(newX, newY)
+
 
     if DISPLAY_DEBUG:
-        print("LENGTH Of DEBUG: ", len(debug_frames))
-        test_view_playback(debug_frames)
+        print("\nLENGTH OF RECORDING: ", len(debug_frames))
+        view_playback(frames_list=debug_frames)
 
 if __name__ == "__main__":
+    view_playback(video_path="krunker_test.mov")
     main()

@@ -1,8 +1,8 @@
 
 """
-    Description:
-    Authors:
-    Date:
+    Description: Utilities, useful functions to support krunker_aimbot.py
+    Authors: Victor J. & Aiden A.
+    Date: Fall 2023
 """
 
 import cv2
@@ -13,32 +13,31 @@ from nametag_detection import create_mask, get_enemey_coords
 
 current_time = time.strftime("%H_%M_%S", time.localtime())
 
-def test_view_playback(list):
+def view_playback(frames_list = None, video_path = None):
+    if frames_list:
+        for frame in frames_list:
+            cv2.imshow(f"Video footage {current_time}", frame)
+            cv2.waitKey(0)
 
-    for frame in list:
-        cv2.imshow("output", frame)
-        cv2.waitKey(0)
+    elif video_path:
+        # reading the input
+        cap = cv2.VideoCapture(video_path)
 
-    cv2.destroyAllWindows()
+        while True:
+            ret, frame = cap.read()
+            if ret:
+                cv2.imshow(f"Video footage from {video_path}", frame)
 
-def view_playback(vid_path):
-
-    print("Reading from video path: ", vid_path)
-    # reading the input
-    cap = cv2.VideoCapture(vid_path)
-
-    while True:
-        print("reading frame")
-        ret, frame = cap.read()
-        if ret:
-            print("\nthis is valid!!!")
-            cv2.imshow("output", frame)
-
-    cap.release()
+        cap.release()
 
     cv2.destroyAllWindows()
 
 def create_debug_video(vid_path: str = None, frames_list: list = None):
+    """
+    Purpose
+    Parameters
+
+    """
     new_vid_path = "krunker_vid_debug_" + current_time + ".avi"
 
     # Define the codec and create VideoWriter object

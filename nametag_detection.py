@@ -1,6 +1,7 @@
 
 """
-    Description: ...
+    Description: Image detection using CV2 to actually detect the nametags, and,
+    by proxy, the Krunker players themselves
     Authors: Victor J. & Aiden A.
     Date: Summer 2023
 """
@@ -11,9 +12,9 @@ import cv2
 
 def get_enemey_coords(image):
     """
-    Purpose: To return a list of all the words found in the dictionary file
-    Parameters: The dictionary file path
-    Returns: List of correct words found in dictionary file
+    Purpose: Return the coordinates of the found enemy, if there is one
+    Parameters: The image where the detection needs to occur
+    Returns: A tuple of the found coordinates; else, None
     """
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
@@ -28,16 +29,17 @@ def get_enemey_coords(image):
     # Parse contours for coordinates
     (contours, _) = cv2.findContours(canny, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
+    # No contours found, no player
     if len(contours) < 1:
         return None
-    
+
     coords = []
-   
+
     # Get coordinates of left-most contour found
     for coordinate in contours[0].tolist():
         coords.append([int(coordinate[0][0]), int(coordinate[0][1])])
 
-    # Adjusting y offset for cursor based on size of nametag, which automatically 
+    # Adjusting y offset for cursor based on size of nametag, which automatically
     # adjusts based on the distance from the player to the nametag
     yoffset = (coords[len(coords) - 1][1] - coords[0][1]) * 2
 
@@ -48,12 +50,19 @@ def get_enemey_coords(image):
     return cursor_coords
 
 def create_mask(frame, coordinates = None):
+    """
+    Purpose: Returns masked image where mask covers everything that is not the krunker
+    screen
+    Parameters: The frame (image) to be masked, and an optional variable for custom
+    masking coodinates
+    Returns: The masked cv2 image
+    """
     # Masks screen so this program only reads info from the game itself
     sideMask = np.zeros(frame.shape[:2], dtype = "uint8")
     (cX, cY) = (frame.shape[1], frame.shape[0])
     cv2.rectangle(sideMask, (cX//4, cY//5), (cX - cX//5, cY - cY//4), 255, -1)
     masked_image = cv2.bitwise_and(frame, frame, mask = sideMask)
-    
+
     return masked_image
 
 if __name__ == "__main__":
