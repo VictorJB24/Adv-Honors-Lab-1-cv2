@@ -12,29 +12,30 @@ import cv2
 
 def get_enemey_coords(image):
     """
-    Purpose: Return the coordinates of the found enemy, if there is one
+    Purpose: Return the coordinates of the found enemy, if there is one detected
     Parameters: The image where the detection needs to occur
     Returns: A tuple of the found coordinates; else, None
     """
+    # Making the image greyscale allows for better contrast detection (not based on color)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     # Threshold for only extremely high contrast areas (which will almost always be only nametag)
     thresh = image.copy()
-    thresh[thresh > 240] = 255 # using manual threshold because it needs to be constant so it always only recognizes nametag
+    # using manual threshold because it needs to be constant so it always only recognizes nametag
+    thresh[thresh > 240] = 255 
     thresh[thresh < 255] = 0
     thresh = cv2.bitwise_not(thresh)
 
-    canny = cv2.Canny(thresh, 30, 150)
+    canny = cv2.Canny(thresh, 30, 150) # Detects edges on high contrast image
 
     # Parse contours for coordinates
     (contours, _) = cv2.findContours(canny, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    # No contours found, no player
+    # Case for no enemy found (returns no location)
     if len(contours) < 1:
         return None
 
     coords = []
-
     # Get coordinates of left-most contour found
     for coordinate in contours[0].tolist():
         coords.append([int(coordinate[0][0]), int(coordinate[0][1])])
@@ -43,7 +44,7 @@ def get_enemey_coords(image):
     # adjusts based on the distance from the player to the nametag
     yoffset = (coords[len(coords) - 1][1] - coords[0][1]) * 2
 
-    # Finding median of coords lists and adjust offset to go from nametag to enemy
+    # Finding median of coords lists and adjust offset to go from nametag (the area actually detected) to acutal enemy
     medianCoords = coords[len(coords) // 2]
     cursor_coords = (medianCoords[0], medianCoords[1] + yoffset)
 
@@ -60,6 +61,8 @@ def create_mask(frame, coordinates = None):
     # Masks screen so this program only reads info from the game itself
     sideMask = np.zeros(frame.shape[:2], dtype = "uint8")
     (cX, cY) = (frame.shape[1], frame.shape[0])
+    # The numbers here have been  found through trial and error, and remove
+    # all on the screen but a portion of the game window itself
     cv2.rectangle(sideMask, (cX//4, cY//5), (cX - cX//5, cY - cY//4), 255, -1)
     masked_image = cv2.bitwise_and(frame, frame, mask = sideMask)
 

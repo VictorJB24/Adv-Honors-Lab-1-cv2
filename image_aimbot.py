@@ -1,6 +1,8 @@
 
 """
-    Description: ...
+    Description: Has the same function as nametag dection.py, except it shows each step of the Cv2 process
+    it was done in a separate file for cleanliness and because some steps happen at a different point
+    in the original
     Authors: Victor J. & Aiden A.
     Date: Summer 2023
 """
@@ -15,21 +17,25 @@ def get_enemey_coords(image):
     Parameters: The dictionary file path
     Returns: List of correct words found in dictionary file
     """
+    # Making the image greyscale allows for better contrast detection (not based on color)    
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    cv2.imshow("BGR_TOGREY", image)
+    cv2.imshow("BGRTOGREY", image)
     cv2.waitKey(0)
     
+    # Creates a mask blocking unecessary parts of screen
     image = create_mask(image)
     cv2.imshow("Masked", image)
 
     # Threshold for only extremely high contrast areas (which will almost always be only nametag)
     thresh = image.copy()
-    thresh[thresh > 240] = 255 # using manual threshold because it needs to be constant so it always only recognizes nametag
+    # using manual threshold because it needs to be constant so it always only recognizes nametag
+    thresh[thresh > 240] = 255
     thresh[thresh < 255] = 0
     thresh = cv2.bitwise_not(thresh)
     cv2.imshow("Threshold", thresh)
     cv2.waitKey(0)
 
+    # Detects edges on high contrast image
     canny = cv2.Canny(thresh, 30, 150)
     cv2.imshow("Canny", canny)
     cv2.waitKey(0)
@@ -41,7 +47,6 @@ def get_enemey_coords(image):
         return None
     
     coords = []
-   
     # Get coordinates of left-most contour found
     for coordinate in contours[0].tolist():
         coords.append([int(coordinate[0][0]), int(coordinate[0][1])])
@@ -53,7 +58,8 @@ def get_enemey_coords(image):
     # Finding median of coords lists and adjust offset to go from nametag to enemy
     medianCoords = coords[len(coords) // 2]
     cursor_coords = (medianCoords[0], medianCoords[1] + yoffset)
-    krunker_frame = cv2.circle(image, cursor_coords, 5, (255,0,0), 5)
+    krunker_frame = cv2.circle(image, cursor_coords, 5, (255,0,0), 5) # Drawing coordinate of found enemy
+
     cv2.imshow("Cursor_Frame", krunker_frame)
     cv2.waitKey(0)
 
@@ -75,5 +81,4 @@ if __name__ == "__main__":
 
     image = cv2.imread(args["image"])
 
-    
     enemy_coords = get_enemey_coords(image)
