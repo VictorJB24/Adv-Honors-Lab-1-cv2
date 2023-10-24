@@ -22,7 +22,7 @@ def get_enemey_coords(image):
     # Threshold for only extremely high contrast areas (which will almost always be only nametag)
     thresh = image.copy()
     # using manual threshold because it needs to be constant so it always only recognizes nametag
-    thresh[thresh > 240] = 255 
+    thresh[thresh > 240] = 255
     thresh[thresh < 255] = 0
     thresh = cv2.bitwise_not(thresh)
 
@@ -50,7 +50,7 @@ def get_enemey_coords(image):
 
     return cursor_coords
 
-def create_mask(frame, coordinates = None):
+def create_mask(frame, custom_coords = None):
     """
     Purpose: Returns masked image where mask covers everything that is not the krunker
     screen
@@ -60,13 +60,20 @@ def create_mask(frame, coordinates = None):
     """
     # Masks screen so this program only reads info from the game itself
     sideMask = np.zeros(frame.shape[:2], dtype = "uint8")
-    (cX, cY) = (frame.shape[1], frame.shape[0])
-    # The numbers here have been  found through trial and error, and remove
-    # all on the screen but a portion of the game window itself
-    cv2.rectangle(sideMask, (cX//4, cY//5), (cX - cX//5, cY - cY//4), 255, -1)
+
+    # The numbers in else statement have been found through trial and error,
+    # and remove all on the screen but a portion of the game window itself
+    if custom_coords:
+        rect_coords = custom_coords
+        cv2.rectangle(sideMask, rect_coords[0], rect_coords[1], 255, -1)
+    else:
+        (cX, cY) = (frame.shape[1], frame.shape[0])
+        rect_coords = [(cX//4, cY//5), (cX - cX//5, cY - cY//4)]
+        cv2.rectangle(sideMask, (cX//4, cY//5), (cX - cX//5, cY - cY//4), 255, -1)
+
     masked_image = cv2.bitwise_and(frame, frame, mask = sideMask)
 
-    return masked_image
+    return masked_image, rect_coords
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
@@ -75,7 +82,7 @@ if __name__ == "__main__":
 
     image = cv2.imread(args["image"])
 
-    masked_image = create_mask(image)
+    masked_image, _ = create_mask(image)
     enemy_coords = get_enemey_coords(masked_image)
 
     print("Player found at coords: ", enemy_coords)
