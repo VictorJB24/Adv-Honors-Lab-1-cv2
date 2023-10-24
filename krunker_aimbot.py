@@ -131,7 +131,7 @@ def main():
                 newX = cursor_coords[0] - cX
                 newY = cursor_coords[1] - cY
 
-                # pymouseutil.mouseDown() # click mouse (start shooting)
+                pymouseutil.mouseDown() # click mouse (start shooting)
 
                 # Moves the center of the screen to the coordinates, thus aligning the crosshair
                 # (at the center of the screen) with the enemy
